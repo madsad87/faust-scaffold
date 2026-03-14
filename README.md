@@ -82,7 +82,7 @@ At WP Engine, we have a strong community built around headless WordPress to supp
 - [Faust.js Documentation](https://faustjs.org/docs/)
 - [Headless Platform Documentation](https://wpengine.com/headless-wordpress/)
 - [WPGraphQL Documentation](https://developers.wpengine.com/docs/atlas/overview/)
-
+- [WooCommerce Front-End Store Plan](docs/woocommerce-store-plan.md)
 
 ## Contributions
 
