@@ -1,19 +1,25 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap");
+
+:root {
+  --od-black: #000000;
+  --od-white: #ffffff;
+  --od-soft-white: #f7f7f5;
+  --od-light-gray: #eaeaea;
+  --od-charcoal: #1a1a1a;
+  --od-taupe: #8d857d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 html,
 body {
-  padding: 0;
   margin: 0;
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    Segoe UI,
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    Fira Sans,
-    Droid Sans,
-    Helvetica Neue,
-    sans-serif;
+  padding: 0;
+  background: var(--od-soft-white);
+  color: var(--od-charcoal);
+  font-family: "Inter", sans-serif;
 }
 
 a {
@@ -21,14 +27,24 @@ a {
   text-decoration: none;
 }
 
-* {
-  box-sizing: border-box;
+img {
+  max-width: 100%;
+  display: block;
 }
 
-#__next {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Playfair Display", serif;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+button {
+  font: inherit;
 }
 
 .container {
