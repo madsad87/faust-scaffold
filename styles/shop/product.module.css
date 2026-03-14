@@ -1,0 +1,84 @@
+.product {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1rem 1rem 3rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.product img {
+  width: 100%;
+  height: min(72vh, 680px);
+  object-fit: cover;
+  filter: grayscale(100%);
+}
+
+.content {
+  position: relative;
+  border: 1px solid var(--od-light-gray);
+  background: var(--od-white);
+  padding: 1.25rem;
+  display: grid;
+  gap: 0.7rem;
+  overflow: hidden;
+}
+
+.content h1 {
+  margin: 0;
+  font-size: clamp(1.9rem, 4vw, 3rem);
+}
+
+.content p {
+  margin: 0;
+  max-width: 55ch;
+  line-height: 1.55;
+}
+
+.sizeGuide {
+  color: rgb(26 26 26 / 72%);
+  font-size: 0.9rem;
+}
+
+.purchaseRow {
+  margin-top: 0.7rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.purchaseRow strong {
+  font-size: 1.2rem;
+}
+
+.purchaseRow button {
+  border: 1px solid var(--od-charcoal);
+  background: var(--od-charcoal);
+  color: var(--od-white);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.76rem;
+  padding: 0.78rem 1.15rem;
+  cursor: pointer;
+}
+
+.watermark {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  opacity: 0.14;
+}
+
+.empty {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 4rem 1rem;
+}
+
+@media (min-width: 880px) {
+  .product {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    padding-top: 2rem;
+  }
+}
