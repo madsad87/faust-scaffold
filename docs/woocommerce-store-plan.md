@@ -25,7 +25,41 @@ This scaffold already provides a strong base for a headless WordPress build:
 - WooCommerce REST API as fallback for operational endpoints not fully covered by GraphQL in your selected plugin set.
 - Webhooks for order lifecycle events and cache invalidation.
 
-## 3) Recommended Build Phases
+## 3) WPGraphQL-Specific Implementation Guidance
+
+To keep this project aligned with GraphQL best practices in the WordPress ecosystem, treat the GraphQL schema as the primary contract and design the frontend around stable query shapes.
+
+### Query strategy
+
+- Prefer small, route-specific queries over a single large query.
+- Use fragments for shared models (`ProductCardFields`, `MoneyFields`, `ImageFields`).
+- Favor cursor-based pagination (`first/after`) for product archives instead of offset pagination.
+- Request only fields needed for the specific UI state (PLP vs PDP vs minicart).
+
+### Schema and plugin strategy
+
+- Freeze a minimum plugin/version matrix for staging and production:
+  - WooCommerce
+  - WPGraphQL
+  - WooCommerce GraphQL integration plugin
+- Maintain a compatibility checklist whenever plugin upgrades are planned.
+- Document any custom schema extensions (custom fields, resolvers, or mapping code) in this repo.
+
+### Auth/session/cart strategy
+
+- Separate concerns between:
+  - **Public catalog reads** (cacheable where possible).
+  - **Session/cart/checkout operations** (user/session scoped, never edge-cached).
+- Ensure cart totals are server-authoritative on every cart-changing operation.
+- Keep guest session continuity consistent across SSR and client transitions.
+
+### Observability and resilience
+
+- Add GraphQL error classification (network, auth/session, validation, upstream Woo).
+- Log operation name, variables shape (redacted), and response timing.
+- Add graceful UI fallback for partial data where safe (e.g., related products block).
+
+## 4) Recommended Build Phases
 
 ### Phase 0 — Discovery & Constraints (1-2 weeks)
 
@@ -33,6 +67,7 @@ This scaffold already provides a strong base for a headless WordPress build:
 - Confirm SEO requirements and faceted navigation behavior (indexable vs noindex filtered URLs).
 - Decide auth model: guest checkout only, account optional, or account-first.
 - Validate plugin stack in WordPress (WooCommerce + GraphQL plugins + payment/shipping extensions).
+- Define schema contract for MVP operations before UI implementation starts.
 
 **Deliverables**
 
@@ -49,6 +84,7 @@ This scaffold already provides a strong base for a headless WordPress build:
   - Product attributes and filters.
 - Normalize image/price/inventory fields for predictable UI consumption.
 - Define ISR revalidation rules per route type (home, category, product).
+- Add a single service layer for GraphQL calls so route components stay presentation-focused.
 
 **Deliverables**
 
@@ -67,6 +103,7 @@ This scaffold already provides a strong base for a headless WordPress build:
   - `/product-category/[slug]`
   - `/product/[slug]`
 - Add loading, empty, and error states for each experience.
+- Add route-level SEO metadata + product/category structured data.
 
 **Deliverables**
 
@@ -82,6 +119,7 @@ This scaffold already provides a strong base for a headless WordPress build:
   - shipping/tax estimate
 - Integrate checkout with chosen payment gateways.
 - Ensure guest checkout, address validation, order confirmation, and failure recovery flows.
+- Validate tax/shipping/discount calculations against WooCommerce server values at each step.
 
 **Deliverables**
 
@@ -95,6 +133,7 @@ This scaffold already provides a strong base for a headless WordPress build:
 - Analytics: GA4 + server-side events (view_item, add_to_cart, begin_checkout, purchase).
 - Performance tuning: image optimization, fragment caching, route-level revalidation tuning.
 - QA/UAT: cross-browser, mobile, payment edge cases, tax/shipping edge cases.
+- Add synthetic checks for critical routes (`/shop`, `/product/[slug]`, checkout success/failure states).
 
 **Deliverables**
 
@@ -102,17 +141,45 @@ This scaffold already provides a strong base for a headless WordPress build:
 - Rollback plan.
 - Post-launch monitoring dashboard.
 
-## 4) Proposed Repository Changes (Implementation Direction)
+## 5) Proposed Repository Changes (Implementation Direction)
 
 - Add commerce-focused folders:
   - `components/commerce/`
+  - `fragments/commerce/`
   - `queries/commerce/`
-  - `lib/commerce/` (mappers/session helpers)
+  - `lib/commerce/` (mappers/session helpers/graphql client wrappers)
+  - `pages/product/[slug].js`
+  - `pages/product-category/[slug].js`
   - `pages/shop/` and/or dynamic product/category routes
 - Keep existing scaffold templates for editorial pages.
 - Introduce a commerce layout shell that reuses global header/footer but adds minicart and shop navigation.
 
-## 5) Integration Risks & Mitigations
+### Suggested initial file map
+
+```bash
+components/commerce/
+  ProductCard.js
+  ProductGrid.js
+  Price.js
+  CartDrawer.js
+fragments/commerce/
+  ProductCardFields.js
+  MoneyFields.js
+queries/commerce/
+  GetShopProducts.js
+  GetProductBySlug.js
+  GetProductsByCategory.js
+lib/commerce/
+  adapters.js
+  cart-session.js
+  graphql-client.js
+pages/
+  shop/index.js
+  product/[slug].js
+  product-category/[slug].js
+```
+
+## 6) Integration Risks & Mitigations
 
 - **Risk:** GraphQL plugin field gaps for advanced WooCommerce flows.
   - **Mitigation:** Hybrid strategy (GraphQL for reads + REST for operational writes where necessary).
@@ -122,8 +189,10 @@ This scaffold already provides a strong base for a headless WordPress build:
   - **Mitigation:** Revalidate aggressively on PDP/cart and always trust checkout-time server recalculation.
 - **Risk:** SEO dilution from faceted URLs.
   - **Mitigation:** Strong canonical/noindex strategy for non-value filter permutations.
+- **Risk:** Schema drift after plugin updates.
+  - **Mitigation:** Add scheduled schema diff checks in CI and gate releases on major schema changes.
 
-## 6) MVP Scope Recommendation
+## 7) MVP Scope Recommendation
 
 Start with:
 
@@ -140,7 +209,7 @@ Defer to phase 2+:
 - Personalized recommendations.
 - Complex bundling/subscriptions (unless business-critical).
 
-## 7) Immediate Next Steps (This Week)
+## 8) Immediate Next Steps (This Week)
 
 1. Stand up WooCommerce + GraphQL plugin stack in a staging WordPress environment.
 2. Validate the top 10 required frontend queries/mutations in GraphQL IDE.
@@ -149,3 +218,20 @@ Defer to phase 2+:
    - `/product/[slug]` route with title/price/add-to-cart stub.
 4. Decide cart API strategy (GraphQL-only vs hybrid GraphQL/REST) before deeper UI build.
 5. Finalize MVP definition and timeline with stakeholders.
+
+## 9) Decision Log Template (Use During Implementation)
+
+Use this lightweight format for architectural decisions made during the build:
+
+- **Decision:**
+- **Date:**
+- **Context:**
+- **Chosen option:**
+- **Alternatives considered:**
+- **Impact/risk:**
+
+Keeping this log current prevents repeated debate when scaling past MVP.
+
+## References
+
+- WP Engine Builders: Everything You Need to Know About WPGraphQL: https://wpengine.com/builders/everything-you-need-to-know-about-wpgraphql/
